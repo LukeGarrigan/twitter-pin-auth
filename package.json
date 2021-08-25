@@ -1,0 +1,19 @@
+{
+  "name": "pin-auth",
+  "version": "1.0.0",
+  "description": "attempting pin auth",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pin",
+    "auth"
+  ],
+  "author": "lg",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
+  }
+}
