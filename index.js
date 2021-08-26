@@ -1,13 +1,36 @@
-var express = require('express')
+const express = require('express');
+const axios = require('axios');
+const oauth = require('oauth');
+const open = require('open');
 require('dotenv').config();
-var app = express()
 
 
-app.get('/twitter-auth', function (req, res) {
-    res.send('hello from twitter auth callback')
-});
+performAuth();
+
+async function performAuth() {
+    const authToken = await getAuthRequestToken();
+    // await user response
+}
 
 
-app.listen(3000)
-console.log(process.env.USER_ID);
-console.log('listening on :3000');
+
+function consumer() {
+  return new oauth.OAuth(
+    "https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",
+    process.env.TWITTER_API_KEY, process.env.TWITTER_API_SECRET, "1.0A", "oob", "HMAC-SHA1");
+}
+
+async function getAuthRequestToken() {
+  await consumer().getOAuthRequestToken(async (error, oauthToken, oauthTokenSecret, results) => {
+    if (error) {
+      console.log(error);
+    } else {
+      await open(`https://twitter.com/oauth/authorize?oauth_token=${oauthToken}`);
+      return {
+        oauthToken,
+        oauthTokenSecret
+      };
+    }
+  })
+}
+
