@@ -11,7 +11,6 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-
 performAuth();
 
 async function performAuth() {
@@ -37,7 +36,6 @@ async function getAuthRequestToken() {
     });
   });
 }
-
 
 async function getAuthAccessToken(oauthToken, oauthTokenSecret, pin) {
   return new Promise((resolve, reject) => {
