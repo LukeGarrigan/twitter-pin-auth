@@ -1,36 +1,79 @@
-const express = require('express');
-const axios = require('axios');
 const oauth = require('oauth');
+const readline = require("readline");
 const open = require('open');
 require('dotenv').config();
+
+const consumer =  new oauth.OAuth("https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",
+                                  process.env.TWITTER_API_KEY, process.env.TWITTER_API_SECRET, "1.0A", "oob", "HMAC-SHA1");
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 
 performAuth();
 
 async function performAuth() {
-    const authToken = await getAuthRequestToken();
-    // await user response
-}
-
-
-
-function consumer() {
-  return new oauth.OAuth(
-    "https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",
-    process.env.TWITTER_API_KEY, process.env.TWITTER_API_SECRET, "1.0A", "oob", "HMAC-SHA1");
+    const authRequest = await getAuthRequestToken();
+    const pin = await getUserPin();
+    const authAccess = await getAuthAccessToken(authRequest.oauthToken, authRequest.oauthTokenSecret, pin);
+    console.log('Successfully authorised with twitter');
+    const userInfo = await getUserInfo(authAccess.oauthAccessToken, authAccess.oauthAccessTokenSecret);
+    console.log('User info', userInfo);
 }
 
 async function getAuthRequestToken() {
-  await consumer().getOAuthRequestToken(async (error, oauthToken, oauthTokenSecret, results) => {
-    if (error) {
-      console.log(error);
-    } else {
-      await open(`https://twitter.com/oauth/authorize?oauth_token=${oauthToken}`);
-      return {
-        oauthToken,
-        oauthTokenSecret
-      };
-    }
+  return new Promise((resolve, reject) => {
+    consumer.getOAuthRequestToken(async (error, oauthToken, oauthTokenSecret, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        await open(`https://twitter.com/oauth/authorize?oauth_token=${oauthToken}`);
+        resolve({
+          oauthToken,
+          oauthTokenSecret
+        });
+      }
+    });
+  });
+}
+
+
+async function getAuthAccessToken(oauthToken, oauthTokenSecret, pin) {
+  return new Promise((resolve, reject) => {
+    consumer.getOAuthAccessToken(oauthToken, oauthTokenSecret, pin, (error, oauthAccessToken, oauthAccessTokenSecret, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({
+          oauthAccessToken,
+          oauthAccessTokenSecret
+        })
+      }
+    })
+  });
+}
+
+async function getUserPin() {
+  return new Promise((resolve, reject) => {
+    rl.question('Enter your code...\n', (pin) => {
+      console.log(`you entered ${pin}`);
+      resolve(pin);
+      rl.close();
+    });
   })
 }
 
+async function getUserInfo(oauthAccessToken, oauthAccessTokenSecret) {
+
+  return new Promise((resolve, reject) => {
+    consumer.get("https://api.twitter.com/1.1/followers/list.json", oauthAccessToken, oauthAccessTokenSecret, function (error, data, response) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(data);
+      }
+    })
+  })
+}
