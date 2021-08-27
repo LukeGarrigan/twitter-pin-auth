@@ -1,9 +1,9 @@
 const oauth = require('oauth');
-const readline = require("readline");
+const readline = require('readline');
 const open = require('open');
 require('dotenv').config();
 
-const consumer =  new oauth.OAuth("https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",
+const consumer = new oauth.OAuth("https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",
                                   process.env.TWITTER_API_KEY, process.env.TWITTER_API_SECRET, "1.0A", "oob", "HMAC-SHA1");
 
 const rl = readline.createInterface({
@@ -56,7 +56,7 @@ async function getAuthAccessToken(oauthToken, oauthTokenSecret, pin) {
 }
 
 async function getUserPin() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     rl.question('Enter your code...\n', (pin) => {
       console.log(`you entered ${pin}`);
       resolve(pin);
@@ -66,7 +66,7 @@ async function getUserPin() {
 }
 
 async function getFollowers(oauthAccessToken, oauthAccessTokenSecret) {
-  console.log('Retrieving followers...')
+  console.log('Retrieving followers...');
   return new Promise((resolve, reject) => {
     consumer.get("https://api.twitter.com/1.1/followers/list.json", oauthAccessToken, oauthAccessTokenSecret, function (error, data, response) {
       if (error) {
