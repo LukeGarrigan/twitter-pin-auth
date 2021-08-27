@@ -18,9 +18,8 @@ async function performAuth() {
     const authRequest = await getAuthRequestToken();
     const pin = await getUserPin();
     const authAccess = await getAuthAccessToken(authRequest.oauthToken, authRequest.oauthTokenSecret, pin);
-    console.log('Successfully authorised with twitter');
-    const userInfo = await getUserInfo(authAccess.oauthAccessToken, authAccess.oauthAccessTokenSecret);
-    console.log('User info', userInfo);
+    const followers = await getFollowers(authAccess.oauthAccessToken, authAccess.oauthAccessTokenSecret);
+    console.log('followers', followers);
 }
 
 async function getAuthRequestToken() {
@@ -46,6 +45,7 @@ async function getAuthAccessToken(oauthToken, oauthTokenSecret, pin) {
       if (error) {
         reject(error);
       } else {
+        console.log('Successfully authorised with twitter');
         resolve({
           oauthAccessToken,
           oauthAccessTokenSecret
@@ -65,8 +65,8 @@ async function getUserPin() {
   })
 }
 
-async function getUserInfo(oauthAccessToken, oauthAccessTokenSecret) {
-
+async function getFollowers(oauthAccessToken, oauthAccessTokenSecret) {
+  console.log('Retrieving followers...')
   return new Promise((resolve, reject) => {
     consumer.get("https://api.twitter.com/1.1/followers/list.json", oauthAccessToken, oauthAccessTokenSecret, function (error, data, response) {
       if (error) {
